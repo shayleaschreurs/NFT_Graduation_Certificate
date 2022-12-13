@@ -4,9 +4,12 @@ from web3 import Web3
 from pathlib import Path
 from dotenv import load_dotenv
 import streamlit as st
+import io
 
 from pinata import pin_file_to_ipfs, pin_json_to_ipfs, convert_data_to_json
 
+# cert editing imports
+from PIL import Image, ImageDraw, ImageFont
 
 # ganache
 load_dotenv()
@@ -33,8 +36,12 @@ contract = load_contract()
 
 # pinata helper functions
 def pin_certificate(certificate_name, certificate_file):
+    # convert to IO
+    img_byte_arr = io.BytesIO()
+    certificate_file.save(img_byte_arr, format='PNG')
+
     # Pin the file to IPFS with Pinata
-    ipfs_file_hash = pin_file_to_ipfs(certificate_file.getvalue())
+    ipfs_file_hash = pin_file_to_ipfs(img_byte_arr.getvalue())
 
     # Build a token metadata file for the certificate
     token_json = {
@@ -64,9 +71,30 @@ completion_date = st.text_input("Enter the completion date")
 # Use the Streamlit `file_uploader` function create the list of digital image file types(jpg, jpeg, or png) that will be uploaded to Pinata.
 file = st.file_uploader("Upload Certificate", type=["jpg", "jpeg", "png"])
 
+name_font = ImageFont.truetype(
+    'template_auto_generator/Open_Sans/OpenSans-Italic-VariableFont_wdth,wght.ttf', size=30)
+
+date_font = ImageFont.truetype(
+    'template_auto_generator/Open_Sans/OpenSans-Medium.ttf', size=25)
+# function for generating a certificate png
+
+
+def generate_certificate_png(name, completion, img):
+    template = Image.open('template/certificate-template-blank.png')
+    pic = Image.open(img).resize((170, 170), Image.ANTIALIAS)
+    template.paste(pic, (311, 452, 481, 622))
+    draw = ImageDraw.Draw(template)
+    draw.text((505, 505), name, font=name_font, fill='black')
+    draw.text((512, 549), completion, font=date_font, fill='#7C121C')
+    return template
+
+
 if st.button("Register Certificate"):
+    certificate_img = generate_certificate_png(
+        student_name, completion_date, file)
     # Use the `pin_certificate` helper function to pin the file to IPFS
-    certificate_ipfs_hash, token_json = pin_certificate(student_name, file)
+    certificate_ipfs_hash, token_json = pin_certificate(
+        student_name, certificate_img)
 
     certificate_uri = f"ipfs://{certificate_ipfs_hash}"
 
