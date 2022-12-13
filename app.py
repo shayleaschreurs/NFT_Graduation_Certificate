@@ -86,7 +86,6 @@ def generate_certificate_png(name, completion, img):
     draw = ImageDraw.Draw(template)
     draw.text((505, 505), name, font=name_font, fill='black')
     draw.text((512, 549), completion, font=date_font, fill='#7C121C')
-    template.save(f'{name}-{completion}-test.png')
     return template
 
 
