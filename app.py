@@ -56,6 +56,15 @@ def pin_certificate(certificate_name, certificate_file):
     return json_ipfs_hash, token_json
 
 
+col1, col2, col3 = st.columns([1, 3, 1])
+with col1:
+    st.write("")
+with col2:
+    st.image("images/Logo.png")
+with col3:
+    st.write("")
+
+
 st.title("Bootcamp Certificate Minter")
 st.write("Choose an account to get started")
 accounts = w3.eth.accounts
