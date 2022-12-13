@@ -66,7 +66,8 @@ st.markdown("---")
 
 st.markdown("## Mint Bootcamp Certificate")
 student_name = st.text_input("Enter full name")
-completion_date = st.text_input("Enter the completion date")
+completion_date = st.text_input(
+    "Enter the completion date", value="December 2022")
 
 # Use the Streamlit `file_uploader` function create the list of digital image file types(jpg, jpeg, or png) that will be uploaded to Pinata.
 file = st.file_uploader("Upload Certificate", type=["jpg", "jpeg", "png"])
