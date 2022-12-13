@@ -56,6 +56,15 @@ def pin_certificate(certificate_name, certificate_file):
     return json_ipfs_hash, token_json
 
 
+col1, col2, col3 = st.columns([1, 3, 1])
+with col1:
+    st.write("")
+with col2:
+    st.image("images/Logo.png")
+with col3:
+    st.write("")
+
+
 st.title("Bootcamp Certificate Minter")
 st.write("Choose an account to get started")
 accounts = w3.eth.accounts
@@ -66,7 +75,8 @@ st.markdown("---")
 
 st.markdown("## Mint Bootcamp Certificate")
 student_name = st.text_input("Enter full name")
-completion_date = st.text_input("Enter the completion date")
+completion_date = st.text_input(
+    "Enter the completion date", value="December 2022")
 
 # Use the Streamlit `file_uploader` function create the list of digital image file types(jpg, jpeg, or png) that will be uploaded to Pinata.
 file = st.file_uploader("Upload Certificate", type=["jpg", "jpeg", "png"])
@@ -106,6 +116,9 @@ if st.button("Register Certificate"):
         token_json['image']
     ).transact({'from': address, 'gas': 1000000})
     receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+    st.markdown("# CONGRATULATIONS!")
+    st.markdown('##### You have successfully registered your certificate!')
+    st.image(certificate_img)
     st.write("Transaction receipt mined:")
     st.write(dict(receipt))
     st.write(
