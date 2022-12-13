@@ -1,11 +1,14 @@
-# TODO: write streamlit app
 import os
 import json
 from web3 import Web3
 from pathlib import Path
 from dotenv import load_dotenv
 import streamlit as st
-### ganache
+
+from pinata import pin_file_to_ipfs, pin_json_to_ipfs, convert_data_to_json
+
+
+# ganache
 load_dotenv()
 
 w3 = Web3(Web3.HTTPProvider(os.getenv("WEB3_PROVIDER_URI")))
@@ -14,20 +17,21 @@ w3 = Web3(Web3.HTTPProvider(os.getenv("WEB3_PROVIDER_URI")))
 def load_contract():
     with open(Path('./contracts/compiled/bootcampcertificate_abi.json')) as f:
         certificate_abi = json.load(f)
-        
+
     contract_address = os.getenv('SMART_CONTRACT_ADDRESS')
-    
+
     contract = w3.eth.contract(
         address=contract_address,
         abi=certificate_abi
     )
-    
+
     return contract
+
 
 contract = load_contract()
 
 
-### pinata helper functions
+# pinata helper functions
 def pin_certificate(certificate_name, certificate_file):
     # Pin the file to IPFS with Pinata
     ipfs_file_hash = pin_file_to_ipfs(certificate_file.getvalue())
@@ -51,7 +55,7 @@ accounts = w3.eth.accounts
 address = st.selectbox("Select Account", options=accounts)
 st.markdown("---")
 
-### ADD CERTIFICATE
+# ADD CERTIFICATE
 
 st.markdown("## Mint Bootcamp Certificate")
 student_name = st.text_input("Enter full name")
@@ -70,15 +74,17 @@ if st.button("Register Certificate"):
         address,
         student_name,
         completion_date,
-        int(initial_appraisal_value),
         certificate_uri,
         token_json['image']
     ).transact({'from': address, 'gas': 1000000})
     receipt = w3.eth.waitForTransactionReceipt(tx_hash)
     st.write("Transaction receipt mined:")
     st.write(dict(receipt))
-    st.write("You can view the pinned metadata file with the following IPFS Gateway Link")
-    st.markdown(f"[Certificate IPFS Gateway Link](https://ipfs.io/ipfs/{certificate_ipfs_hash})")
-    st.markdown(f"[Certificate IPFS Image Link](https://ipfs.io/ipfs/{token_json['image']})")
+    st.write(
+        "You can view the pinned metadata file with the following IPFS Gateway Link")
+    st.markdown(
+        f"[Certificate IPFS Gateway Link](https://ipfs.io/ipfs/{certificate_ipfs_hash})")
+    st.markdown(
+        f"[Certificate IPFS Image Link](https://ipfs.io/ipfs/{token_json['image']})")
 
 st.markdown("---")
