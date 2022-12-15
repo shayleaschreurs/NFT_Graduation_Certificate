@@ -5,6 +5,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import streamlit as st
 import io
+import pandas as pd
 
 from pinata import pin_file_to_ipfs, pin_json_to_ipfs, convert_data_to_json
 
@@ -55,7 +56,33 @@ def pin_certificate(certificate_name, certificate_file):
 
     return json_ipfs_hash, token_json
 
+# function for generating a certificate png
 
+
+def generate_individual_certificate_png(name, completion, img):
+    template = Image.open('template/certificate-template-blank.png')
+    pic = Image.open(img).resize((170, 170), Image.ANTIALIAS)
+    template.paste(pic, (311, 452, 481, 622))
+    draw = ImageDraw.Draw(template)
+    draw.text((512, 505), name, font=name_font, fill='black')
+    draw.text((512, 549), completion, font=date_font, fill='#7C121C')
+    return template
+
+
+def generate_batch_certificate_png(name, completion):
+    template = Image.open('template/certificate-template-batch.png')
+    draw = ImageDraw.Draw(template)
+    canvasWidth = template.size[0]
+    nameWidth = draw.textsize(name, font=name_font)[0]
+    dateWidth = draw.textsize(completion, font=date_font)[0]
+    draw.text(((canvasWidth - nameWidth)/2, 505),
+              name, font=name_font, fill='black')
+    draw.text(((canvasWidth - dateWidth)/2, 549),
+              completion, font=date_font, fill='#7C121C')
+    return template
+
+
+# Streamlit App UI
 col1, col2, col3 = st.columns([1, 3, 1])
 with col1:
     st.write("")
@@ -72,60 +99,95 @@ address = st.selectbox("Select Account", options=accounts)
 st.markdown("---")
 
 # ADD CERTIFICATE
-
 st.markdown("## Mint Bootcamp Certificate")
-student_name = st.text_input("Enter full name")
-completion_date = st.text_input(
-    "Enter the completion date", value="December 2022")
 
-# Use the Streamlit `file_uploader` function create the list of digital image file types(jpg, jpeg, or png) that will be uploaded to Pinata.
-file = st.file_uploader("Upload Certificate", type=["jpg", "jpeg", "png"])
+tab1, tab2 = st.tabs(["Individual", "Batch (Teacher Mode)"])
 
-name_font = ImageFont.truetype(
-    'template_auto_generator/Open_Sans/OpenSans-Italic-VariableFont_wdth,wght.ttf', size=30)
+# INDIVIDUAL
+with tab1:
+    student_name = st.text_input("Enter full name")
+    completion_date = st.text_input(
+        "Enter the completion date", value="December 2022")
 
-date_font = ImageFont.truetype(
-    'template_auto_generator/Open_Sans/OpenSans-Medium.ttf', size=25)
-# function for generating a certificate png
+    # Use the Streamlit `file_uploader` function create the list of digital image file types(jpg, jpeg, or png) that will be uploaded to Pinata.
+    file = st.file_uploader("Upload Certificate", type=["jpg", "jpeg", "png"])
+
+    name_font = ImageFont.truetype(
+        'template_auto_generator/Open_Sans/OpenSans-Italic-VariableFont_wdth,wght.ttf', size=30)
+
+    date_font = ImageFont.truetype(
+        'template_auto_generator/Open_Sans/OpenSans-Medium.ttf', size=25)
+
+    if st.button("Register Certificate"):
+        certificate_img = generate_individual_certificate_png(
+            student_name, completion_date, file)
+        # Use the `pin_certificate` helper function to pin the file to IPFS
+        certificate_ipfs_hash, token_json = pin_certificate(
+            student_name, certificate_img)
+
+        certificate_uri = f"ipfs://{certificate_ipfs_hash}"
+
+        tx_hash = contract.functions.registerCertificate(
+            address,
+            student_name,
+            completion_date,
+            certificate_uri,
+            token_json['image']
+        ).transact({'from': address, 'gas': 1000000})
+        receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+        st.markdown("# CONGRATULATIONS!")
+        st.markdown('##### You have successfully registered your certificate!')
+        st.image(certificate_img)
+        st.write("Transaction receipt mined:")
+        st.write(dict(receipt))
+        st.write(
+            "You can view the pinned metadata file with the following IPFS Gateway Link")
+        st.markdown(
+            f"[Certificate IPFS Gateway Link](https://ipfs.io/ipfs/{certificate_ipfs_hash})")
+        st.markdown(
+            f"[Certificate IPFS Image Link](https://ipfs.io/ipfs/{token_json['image']})")
 
 
-def generate_certificate_png(name, completion, img):
-    template = Image.open('template/certificate-template-blank.png')
-    pic = Image.open(img).resize((170, 170), Image.ANTIALIAS)
-    template.paste(pic, (311, 452, 481, 622))
-    draw = ImageDraw.Draw(template)
-    draw.text((505, 505), name, font=name_font, fill='black')
-    draw.text((512, 549), completion, font=date_font, fill='#7C121C')
-    return template
-
-
-if st.button("Register Certificate"):
-    certificate_img = generate_certificate_png(
-        student_name, completion_date, file)
-    # Use the `pin_certificate` helper function to pin the file to IPFS
-    certificate_ipfs_hash, token_json = pin_certificate(
-        student_name, certificate_img)
-
-    certificate_uri = f"ipfs://{certificate_ipfs_hash}"
-
-    tx_hash = contract.functions.registerCertificate(
-        address,
-        student_name,
-        completion_date,
-        certificate_uri,
-        token_json['image']
-    ).transact({'from': address, 'gas': 1000000})
-    receipt = w3.eth.waitForTransactionReceipt(tx_hash)
-    st.markdown("# CONGRATULATIONS!")
-    st.markdown('##### You have successfully registered your certificate!')
-    st.image(certificate_img)
-    st.write("Transaction receipt mined:")
-    st.write(dict(receipt))
+# BATCH
+with tab2:
     st.write(
-        "You can view the pinned metadata file with the following IPFS Gateway Link")
-    st.markdown(
-        f"[Certificate IPFS Gateway Link](https://ipfs.io/ipfs/{certificate_ipfs_hash})")
-    st.markdown(
-        f"[Certificate IPFS Image Link](https://ipfs.io/ipfs/{token_json['image']})")
+        'Upload a CSV file with the following columns (for each student):')
+    st.write('- name')
+    st.write('- completion_date')
+    file = st.file_uploader("Upload CSV", type=["csv"])
 
+    if st.button("Register Certificates"):
+        st.write("Uploading...")
+        # read csv
+        df = pd.read_csv(file)
+        # iterate through each row
+        for index, row in df.iterrows():
+            # generate certificate
+            certificate_img = generate_batch_certificate_png(
+                row['name'], row['completion_date'])
+            # pin certificate
+            certificate_ipfs_hash, token_json = pin_certificate(
+                row['name'], certificate_img)
+            certificate_uri = f"ipfs://{certificate_ipfs_hash}"
+            # mint certificate
+            tx_hash = contract.functions.registerCertificate(
+                address,
+                row['name'],
+                row['completion_date'],
+                certificate_uri,
+                token_json['image']
+            ).transact({'from': address, 'gas': 1000000})
+            receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+            st.markdown(f"# CONGRATULATIONS! {row['name']}")
+            st.markdown(
+                '##### You have successfully registered your certificate!')
+            st.image(certificate_img)
+            st.write("Transaction receipt mined:")
+            st.write(dict(receipt))
+            st.write(
+                "You can view the pinned metadata file with the following IPFS Gateway Link")
+            st.markdown(
+                f"[Certificate IPFS Gateway Link](https://ipfs.io/ipfs/{certificate_ipfs_hash})")
+            st.markdown(
+                f"[Certificate IPFS Image Link](https://ipfs.io/ipfs/{token_json['image']})")
 st.markdown("---")
