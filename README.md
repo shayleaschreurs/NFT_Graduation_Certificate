@@ -21,7 +21,7 @@ Overall, the project combines the power of blockchain technology and modern prog
 * Install Python dotenv. To do so, navigate to your terminal or gitbash and type 'pip install python-dotenv'
 
 ### Additional Setup
-* Register with Pinata to obtain developer API keys. https://www.pinata.cloud/ 
+* Register with Pinata to obtain developer API keys. https://www.pinata.cloud/  
     -Navigate to the Developers tab after logging into Pinata to create a new key.  
     -Make sure to save your new keys to a secure place on your local computer.
     
