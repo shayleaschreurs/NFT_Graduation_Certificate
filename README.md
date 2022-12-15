@@ -21,10 +21,9 @@ Overall, the project combines the power of blockchain technology and modern prog
 * Install Python dotenv. To do so, navigate to your terminal or gitbash and type 'pip install python-dotenv'
 
 ### Additional Setup
-* Register with Pinata to obtain developer API keys.  
+* Register with Pinata to obtain developer API keys. https://www.pinata.cloud/ 
     -Navigate to the Developers tab after logging into Pinata to create a new key.  
-    -Make sure to save your new keys to a secure place on your local computer.  
-    -https://www.pinata.cloud/
+    -Make sure to save your new keys to a secure place on your local computer.
     
 ### Download and Launch
 * Download the project file named project_3 to your desktop
@@ -32,7 +31,7 @@ Overall, the project combines the power of blockchain technology and modern prog
     -Input your API Key from Pinata into the PINATA_API_KEY variable  
     -Input your API Secret from Pinata into the PINATA_SECRET_API_KEY variable  
     -Input the Ganache URI http://127.0.0.1:7545 into the WEB3_PROVIDER_URI variable  
-    -Input a public address from your Ganache into the SMART_CONTRACT_ADDRESS var
+    -Input a public address from your Ganache into the SMART_CONTRACT_ADDRESS variable
 * Navigate to the terminal or gitbash instance in which you installed Streamlit and Python dotenv
 * In terminal or gitbash navigate to the project_3 file. To do so follow these steps;  
     -type 'cd desktop' then press enter  
@@ -42,12 +41,12 @@ Overall, the project combines the power of blockchain technology and modern prog
 ### Using the Minter
 ##### Navigating As A Student
 * Use the 'Select Account' dropdown to choose which eth address you want to mint the certifcate to
-* Enter you first and last name in the 'Enter full name' textbox
-* The date of completion will automatically be filled in for you
-* Upload a headshot from you computer. Make sure it a vertical portrait photo to ensure quality.
-* Press the 'Register Certificate' button
+* Enter your first and last name in the 'Enter full name' textbox
+* The date of completion will automatically be filled out for you
+* Upload a headshot from your computer. Make sure it is a vertical portrait photo to ensure higher quality.
+* Press the 'Register Certificate' button and your certificate will be minted to you ETH address with your name and photo attached! A preview will pop up on your screen along with the transaction receipt, and IPFS links. 
 
-##### Navigating as an instructor
+##### Navigating As An Instructor
 
     
     
