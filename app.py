@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import streamlit as st
 import io
 import pandas as pd
+import urllib.request
 
 from pinata import pin_file_to_ipfs, pin_json_to_ipfs, convert_data_to_json
 
@@ -82,6 +83,16 @@ def generate_batch_certificate_png(name, completion):
     return template
 
 
+def generate_batch_image_certificate_png(name, completion, img):
+    template = Image.open('template/certificate-template-blank.png')
+    pic = Image.open(img).resize((170, 170), Image.ANTIALIAS)
+    template.paste(pic, (311, 452, 481, 622))
+    draw = ImageDraw.Draw(template)
+    draw.text((512, 505), name, font=name_font, fill='black')
+    draw.text((512, 549), completion, font=date_font, fill='#7C121C')
+    return template
+
+
 # Streamlit App UI
 col1, col2, col3 = st.columns([1, 3, 1])
 with col1:
@@ -154,17 +165,33 @@ with tab2:
         'Upload a CSV file with the following columns (for each student):')
     st.write('- name')
     st.write('- completion_date')
+    st.write('- certificate_image_url (optional)')
     file = st.file_uploader("Upload CSV", type=["csv"])
 
     if st.button("Register Certificates"):
         st.write("Uploading...")
         # read csv
-        df = pd.read_csv(file)
+        df = pd.read_csv(file).fillna(value='empty')
         # iterate through each row
         for index, row in df.iterrows():
+            certificate_img = None
+            temp_img = None
             # generate certificate
-            certificate_img = generate_batch_certificate_png(
-                row['name'], row['completion_date'])
+            if row['certificate_image_url'] != 'empty':
+                try:
+                    temp_img = urllib.request.urlretrieve(
+                        row["certificate_image_url"], 'temp_img.png')
+                    certificate_img = generate_individual_certificate_png(
+                        row['name'], row['completion_date'], temp_img[0])
+                except:
+                    temp_img = './template_auto_generator/placeholder.png'
+                    certificate_img = generate_individual_certificate_png(
+                        row['name'], row['completion_date'], temp_img)
+
+            else:
+                certificate_img = generate_batch_certificate_png(
+                    row['name'], row['completion_date'])
+
             # pin certificate
             certificate_ipfs_hash, token_json = pin_certificate(
                 row['name'], certificate_img)
