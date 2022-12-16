@@ -44,9 +44,10 @@ Overall, the project combines the power of blockchain technology and modern prog
 * Enter your first and last name in the 'Enter full name' textbox
 * The date of completion will automatically be filled out for you
 * Upload a headshot from your computer. Make sure it is a vertical portrait photo to ensure higher quality.
-* Press the 'Register Certificate' button and your certificate will be minted to you ETH address with your name and photo attached! A preview will pop up on your screen along with the transaction receipt, and IPFS links. 
+* Press the 'Register Certificate' button and your certificate will be minted to your ETH address with your name and photo attached! A preview will pop up on your screen along with the transaction receipt, and IPFS links. 
 
 ##### Navigating As An Instructor
-
-    
-    
+* Create a .csv file with 3 columns - Student full name, completion date, and photo url (optional)
+* Navigate to the Batch(Teacher Mode) tab
+* Click the 'Browse files' button and select your .csv file
+* Press 'Register Certificates' and each certificate will be minted at once
