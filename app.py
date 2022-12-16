@@ -146,6 +146,7 @@ with tab1:
             token_json['image']
         ).transact({'from': address, 'gas': 1000000})
         receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+        st.balloons()
         st.markdown("# CONGRATULATIONS!")
         st.markdown('##### You have successfully registered your certificate!')
         st.image(certificate_img)
@@ -205,6 +206,7 @@ with tab2:
                 token_json['image']
             ).transact({'from': address, 'gas': 1000000})
             receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+            st.balloons()
             st.markdown(f"# CONGRATULATIONS! {row['name']}")
             st.markdown(
                 '##### You have successfully registered your certificate!')
